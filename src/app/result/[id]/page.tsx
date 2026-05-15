@@ -5,8 +5,21 @@ import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, Share2, Download, AlertTriangle } from "lucide-react";
 import html2canvas from "html2canvas-pro";
-import { getPaymentWidget } from "@/lib/tossPayment"; // Your toss utility 
+import { getPaymentWidget } from "@/lib/tossPayment";
 import type { PaymentWidgetInstance } from "@tosspayments/payment-widget-sdk";
+
+function readTossPaymentAmount(): number {
+    const n = Number(process.env.NEXT_PUBLIC_TOSS_PAYMENT_AMOUNT);
+    return Number.isFinite(n) && n > 0 ? n : 990;
+}
+
+const TOSS_PAYMENT_AMOUNT = readTossPaymentAmount();
+const TOSS_ORDER_NAME =
+    process.env.NEXT_PUBLIC_TOSS_ORDER_NAME?.trim() || "마라맛 사주 폭탄 제거 2026";
+const TOSS_ORDER_ID_PREFIX =
+    process.env.NEXT_PUBLIC_TOSS_ORDER_ID_PREFIX?.trim() || "MARA_";
+const TOSS_AGREEMENT_VARIANT_KEY =
+    process.env.NEXT_PUBLIC_TOSS_AGREEMENT_VARIANT_KEY?.trim() || "AGREEMENT";
 
 export default function ResultPage() {
     const { id } = useParams();
@@ -54,8 +67,8 @@ export default function ResultPage() {
     useEffect(() => {
         // Re-render payment widget when modal opens and widget is ready
         if (isPaymentModalOpen && paymentWidget) {
-            paymentWidget.renderPaymentMethods("#payment-method", 990); // Amount 990
-            paymentWidget.renderAgreement("#agreement", { variantKey: "AGREEMENT" });
+            paymentWidget.renderPaymentMethods("#payment-method", TOSS_PAYMENT_AMOUNT);
+            paymentWidget.renderAgreement("#agreement", { variantKey: TOSS_AGREEMENT_VARIANT_KEY });
         }
     }, [isPaymentModalOpen, paymentWidget]);
 
@@ -138,8 +151,8 @@ export default function ResultPage() {
         if (!paymentWidget) return;
         try {
             await paymentWidget.requestPayment({
-                orderId: `MARA_${id}_${Date.now()}`,
-                orderName: "마라맛 사주 폭탄 제거 2026",
+                orderId: `${TOSS_ORDER_ID_PREFIX}${id}_${Date.now()}`,
+                orderName: TOSS_ORDER_NAME,
                 successUrl: `${window.location.origin}/api/payment/success?id=${id}`,
                 failUrl: `${window.location.origin}/result/${id}?fail=true`,
             });
@@ -240,7 +253,7 @@ export default function ResultPage() {
                         className="w-full bg-yellow-400 text-black font-black text-lg py-4 rounded-2xl flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(250,204,21,0.3)] hover:scale-[1.02] active:scale-[0.98] transition-all animate-pulse"
                     >
                         <Lock className="w-5 h-5" />
-                        💸 990원 결제하고 바로 확인하기
+                        💸 {TOSS_PAYMENT_AMOUNT.toLocaleString("ko-KR")}원 결제하고 바로 확인하기
                     </button>
                     <button
                         onClick={handleKakaoShare}
@@ -298,7 +311,9 @@ export default function ResultPage() {
                             transition={{ type: "spring", damping: 25, stiffness: 200 }}
                             className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-md bg-white rounded-t-3xl p-6 z-50 shadow-2xl h-[75vh] overflow-y-auto"
                         >
-                            <h3 className="text-black font-black text-2xl mb-4">복비 결제 (990원)</h3>
+                            <h3 className="text-black font-black text-2xl mb-4">
+                                복비 결제 ({TOSS_PAYMENT_AMOUNT.toLocaleString("ko-KR")}원)
+                            </h3>
                             <div id="payment-method" className="w-full" />
                             <div id="agreement" className="w-full mb-6" />
                             <button

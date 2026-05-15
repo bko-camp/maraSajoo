@@ -5,7 +5,7 @@ import crypto from 'crypto';
 
 import { mockDb } from '@/lib/db';
 
-// Initialize Gemini. Make sure to set GEMINI_API_KEY in .env.local
+// Initialize Gemini. Set GEMINI_API_KEY in .env or .env.local
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 
 const SYSTEM_PROMPT = `

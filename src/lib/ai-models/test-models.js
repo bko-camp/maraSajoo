@@ -1,8 +1,14 @@
+require("dotenv").config({ quiet: true });
 
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 async function listModels() {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error("GEMINI_API_KEY is not set (.env)");
+    process.exit(1);
+  }
+  const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
   
   // Note: There isn't a direct listModels in the simple SDK wrapper sometimes, 

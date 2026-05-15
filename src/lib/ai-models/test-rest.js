@@ -1,6 +1,11 @@
+require("dotenv").config({ quiet: true });
 
 async function testRest() {
-  const apiKey = "AIzaSyC_Bl9yxA_wa7HhkIzBQ-tGHX8m6vqdZaU";
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    console.error("GEMINI_API_KEY is not set (.env)");
+    process.exit(1);
+  }
   const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
   
   try {
