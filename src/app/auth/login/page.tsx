@@ -1,3 +1,4 @@
+import { LoginSubtitle } from "./LoginSubtitle";
 import { SocialLoginButtons } from "./SocialLoginButtons";
 
 export default function LoginPage() {
@@ -10,9 +11,7 @@ export default function LoginPage() {
         >
           로그인
         </h1>
-        <p className="text-gray-400 font-medium">
-          소셜 계정으로 간편하게 시작하세요
-        </p>
+        <LoginSubtitle />
       </div>
 
       <div className="flex flex-col gap-3 flex-1">

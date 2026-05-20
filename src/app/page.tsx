@@ -1,32 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useForm, Controller } from "react-hook-form";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
+import { useSajuAnalysis } from "@/hooks";
+import { AUTH_LOGIN_PATH } from "@/lib/auth-guide";
+import { useSajuPendingStore } from "@/stores";
+import { toSajuFormPayload, type SajuFormInput } from "@/types/saju";
 
-type FormData = {
-  name: string;
-  gender: "남" | "여";
-  birthYear: string;
-  birthMonth: string;
-  birthDay: string;
-  birthTime: string;
-  isTimeUnknown: boolean;
-};
-
-const LOADING_MESSAGES = [
-  "신내림 받는 중...",
-  "너의 망한 팔자 스캔 중...",
-  "어휴... 한숨부터 나오네...",
-  "거의 다 왔어, 각오해라...",
-];
+const SAJU_RESUME_LOCK_KEY = "mara-saju-resume-lock";
 
 export default function Home() {
   const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMsgIdx, setLoadingMsgIdx] = useState(0);
+  const { status } = useSession();
+  const { analyze, isLoading, loadingMsgIdx, loadingMessages } = useSajuAnalysis();
+  const setPending = useSajuPendingStore((s) => s.setPending);
+  const clearPending = useSajuPendingStore((s) => s.clearPending);
+  const hasResumed = useRef(false);
 
   const {
     register,
@@ -34,7 +27,7 @@ export default function Home() {
     control,
     watch,
     formState: { errors },
-  } = useForm<FormData>({
+  } = useForm<SajuFormInput>({
     defaultValues: {
       gender: "여",
       isTimeUnknown: false,
@@ -43,47 +36,43 @@ export default function Home() {
 
   const isTimeUnknown = watch("isTimeUnknown");
 
-  const onSubmit = async (data: FormData) => {
-    setIsLoading(true);
+  useEffect(() => {
+    if (status !== "authenticated") return;
 
-    const formattedData = {
-      ...data,
-      birthDate: `${data.birthYear}-${String(data.birthMonth).padStart(2, '0')}-${String(data.birthDay).padStart(2, '0')}`
+    const tryResume = () => {
+      const pending = useSajuPendingStore.getState().pending;
+      if (!pending || hasResumed.current || isLoading) return;
+      if (sessionStorage.getItem(SAJU_RESUME_LOCK_KEY)) return;
+
+      sessionStorage.setItem(SAJU_RESUME_LOCK_KEY, "1");
+      hasResumed.current = true;
+      analyze(pending).then((ok) => {
+        sessionStorage.removeItem(SAJU_RESUME_LOCK_KEY);
+        if (ok) clearPending();
+        else hasResumed.current = false;
+      });
     };
 
-    // Start loading messages cycle
-    const interval = setInterval(() => {
-      setLoadingMsgIdx((prev) => (prev + 1) % LOADING_MESSAGES.length);
-    }, 1200);
-
-    try {
-      // 1. Send data to our API route
-      const res = await fetch("/api/saju", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formattedData),
-      });
-
-      const result = await res.json();
-
-      // 2. Minimum 3 seconds artificial delay for dopamine buildup
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      clearInterval(interval);
-
-      if (result.id) {
-        // 3. Move to result page
-        router.push(`/result/${result.id}`);
-      } else {
-        alert("사주 분석에 실패했습니다. 다시 시도해주세요.");
-        setIsLoading(false);
-      }
-
-    } catch (err) {
-      console.error(err);
-      clearInterval(interval);
-      setIsLoading(false);
-      alert("서버 오류가 발생했습니다.");
+    if (useSajuPendingStore.persist.hasHydrated()) {
+      tryResume();
+      return;
     }
+
+    return useSajuPendingStore.persist.onFinishHydration(tryResume);
+  }, [status, isLoading, analyze, clearPending]);
+
+  const onSubmit = async (data: SajuFormInput) => {
+    if (status === "loading") return;
+
+    const payload = toSajuFormPayload(data);
+
+    if (status !== "authenticated") {
+      setPending(payload);
+      router.push(AUTH_LOGIN_PATH);
+      return;
+    }
+
+    await analyze(payload);
   };
 
   return (
@@ -97,7 +86,7 @@ export default function Home() {
           마라맛 보살
         </h1>
         <p className="text-gray-400 font-medium text-lg">
-          "어차피 망한 인생, 팩트폭행이나 맞고 가라."
+          &quot;어차피 망한 인생, 팩트폭행이나 맞고 가라.&quot;
         </p>
       </div>
 
@@ -220,7 +209,8 @@ export default function Home() {
         {/* CTA Button */}
         <button
           type="submit"
-          className="w-full bg-red-600 text-white font-black text-lg py-5 rounded-2xl animate-pulse shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:scale-[1.02] transition-transform active:scale-95"
+          disabled={status === "loading" || isLoading}
+          className="w-full bg-red-600 text-white font-black text-lg py-5 rounded-2xl animate-pulse shadow-[0_0_20px_rgba(220,38,38,0.4)] hover:scale-[1.02] transition-transform active:scale-95 disabled:opacity-60 disabled:animate-none"
         >
           내 인생 팩폭 맞기 🔥
         </button>
@@ -244,13 +234,13 @@ export default function Home() {
             </motion.div>
 
             <motion.p
-              key={loadingMsgIdx} // Re-animate on text change
+              key={loadingMsgIdx}
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -20, opacity: 0 }}
               className="text-2xl font-black text-center text-white text-neon-red"
             >
-              {LOADING_MESSAGES[loadingMsgIdx]}
+              {loadingMessages[loadingMsgIdx]}
             </motion.p>
           </motion.div>
         )}
