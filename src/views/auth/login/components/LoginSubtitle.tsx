@@ -1,8 +1,8 @@
 "use client";
 
-import { useSajuPendingStore } from "@/stores";
+import { useSajuPendingStore } from "@/store";
 
-export function LoginSubtitle() {
+const LoginSubtitle = () => {
   const pending = useSajuPendingStore((s) => s.pending);
 
   return (
@@ -12,4 +12,6 @@ export function LoginSubtitle() {
         : "소셜 계정으로 간편하게 시작하세요"}
     </p>
   );
-}
+};
+
+export default LoginSubtitle;

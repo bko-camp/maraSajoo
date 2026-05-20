@@ -1,4 +1,4 @@
-import type { AuthProvider } from "@/stores/useUserStore";
+import type { AuthProvider } from "@/types/auth";
 import type { DefaultSession } from "next-auth";
 
 declare module "next-auth" {

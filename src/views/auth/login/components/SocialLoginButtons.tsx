@@ -44,7 +44,7 @@ const SOCIAL_PROVIDERS = [
   },
 ] as const;
 
-export function SocialLoginButtons() {
+const SocialLoginButtons = () => {
   return (
     <>
       {SOCIAL_PROVIDERS.map((provider) => (
@@ -60,4 +60,6 @@ export function SocialLoginButtons() {
       ))}
     </>
   );
-}
+};
+
+export default SocialLoginButtons;

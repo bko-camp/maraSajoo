@@ -2,13 +2,14 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
-import { useUserStore, type AuthProvider } from "@/stores";
 
-function isAuthProvider(value: string | undefined): value is AuthProvider {
-  return value === "google" || value === "kakao";
-}
+import { useUserStore } from "@/store";
+import type { AuthProvider } from "@/types/auth";
 
-export function UserStoreSync() {
+const isAuthProvider = (value: string | undefined): value is AuthProvider =>
+  value === "google" || value === "kakao";
+
+const UserStoreSync = () => {
   const { data: session, status } = useSession();
   const setUser = useUserStore((s) => s.setUser);
   const clearUser = useUserStore((s) => s.clearUser);
@@ -31,4 +32,6 @@ export function UserStoreSync() {
   }, [session, status, setUser, clearUser]);
 
   return null;
-}
+};
+
+export default UserStoreSync;

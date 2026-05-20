@@ -4,9 +4,10 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
+
 import { AUTH_DEFAULT_REDIRECT, AUTH_LOGIN_PATH } from "@/lib/auth-guide";
 
-export function Header() {
+const Header = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { status } = useSession();
@@ -68,4 +69,6 @@ export function Header() {
       </div>
     </header>
   );
-}
+};
+
+export default Header;

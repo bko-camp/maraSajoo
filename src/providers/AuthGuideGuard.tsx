@@ -2,9 +2,10 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+
 import { useAuthGuide } from "@/hooks";
 
-export function AuthGuideGuard() {
+const AuthGuideGuard = () => {
   const router = useRouter();
   const { shouldRedirect, redirectTo } = useAuthGuide();
 
@@ -15,4 +16,6 @@ export function AuthGuideGuard() {
   }, [shouldRedirect, redirectTo, router]);
 
   return null;
-}
+};
+
+export default AuthGuideGuard;

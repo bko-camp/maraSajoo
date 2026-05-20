@@ -2,7 +2,7 @@
 
 import { create } from "zustand";
 
-export type AuthProvider = "google" | "kakao";
+import type { AuthProvider } from "@/types/auth";
 
 interface UserState {
   name: string | null;
