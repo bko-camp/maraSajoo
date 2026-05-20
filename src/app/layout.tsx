@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next";
 import AppProviders from "@/providers";
 import "./globals.css";
 
@@ -29,6 +30,7 @@ export default function RootLayout({
           src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
           strategy="lazyOnload"
         />
+        <Analytics />
       </body>
     </html>
   );
