@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { Loader2 } from "lucide-react";
+import { AUTH_DEFAULT_REDIRECT } from "@/lib/auth-guide";
 import { useUserStore, type AuthProvider } from "@/stores";
 
 const PROVIDER_LABELS: Record<AuthProvider, { label: string; className: string }> = {
@@ -24,49 +25,15 @@ export default function ProfilePage() {
   const provider = useUserStore((s) => s.provider);
 
   const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/auth/login" });
-    router.push("/auth/login");
+    await signOut({ callbackUrl: AUTH_DEFAULT_REDIRECT });
+    router.push(AUTH_DEFAULT_REDIRECT);
   };
 
-  if (status === "loading") {
+  if (status === "loading" || !name || !provider) {
     return (
       <div className="flex flex-col min-h-screen items-center justify-center px-6">
         <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
         <p className="text-gray-400 text-sm mt-4">프로필 불러오는 중...</p>
-      </div>
-    );
-  }
-
-  if (status !== "authenticated" || !name || !provider) {
-    return (
-      <div className="flex flex-col min-h-screen px-6 py-12">
-        <Link
-          href="/"
-          className="text-sm text-gray-500 hover:text-gray-300 transition-colors mb-8"
-        >
-          ← 홈으로
-        </Link>
-
-        <div className="text-center mb-12 mt-16">
-          <h1
-            className="text-4xl font-black mb-4 tracking-tighter text-glitch"
-            data-text="프로필"
-          >
-            프로필
-          </h1>
-          <p className="text-gray-400 font-medium">
-            로그인하면 내 계정 정보를 볼 수 있어요
-          </p>
-        </div>
-
-        <div className="flex-1 flex flex-col justify-center">
-          <Link
-            href="/auth/login"
-            className="w-full bg-red-600 text-white font-bold text-center py-4 rounded-xl hover:bg-red-500 transition-colors"
-          >
-            로그인하기
-          </Link>
-        </div>
       </div>
     );
   }
