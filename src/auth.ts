@@ -2,9 +2,8 @@ import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
 import Kakao from "next-auth/providers/kakao";
 
-// Vercel에 localhost AUTH_URL이 남아 있으면 trustHost 대신 localhost를 씀 → 제거
-// VERCEL_URL(배포별 고유 URL)로 덮어쓰면 git-dev alias와 콜백 도메인이 어긋남
-if (process.env.VERCEL && process.env.AUTH_URL?.includes("localhost")) {
+// Vercel에서는 AUTH_URL 없이 trustHost가 접속 URL을 콜백 URI로 사용
+if (process.env.VERCEL) {
   delete process.env.AUTH_URL;
 }
 
