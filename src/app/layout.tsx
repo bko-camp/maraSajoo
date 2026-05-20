@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { AppProviders } from "@/components/providers/AppProviders";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin", "cyrillic"] });
@@ -20,7 +21,7 @@ export default function RootLayout({
       <body className={`${inter.className} bg-black text-gray-100 antialiased min-h-screen flex justify-center`}>
         {/* Mobile App Container */}
         <main className="w-full max-w-md bg-[#0a0a0a] min-h-screen relative overflow-x-hidden shadow-2xl shadow-red-900/10">
-          {children}
+          <AppProviders>{children}</AppProviders>
         </main>
 
         {/* Kakao SDK */}

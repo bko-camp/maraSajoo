@@ -23,4 +23,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: {
     signIn: "/auth/login",
   },
+  callbacks: {
+    jwt({ token, account }) {
+      if (account?.provider === "google" || account?.provider === "kakao") {
+        token.provider = account.provider;
+      }
+      return token;
+    },
+    session({ session, token }) {
+      if (
+        session.user &&
+        (token.provider === "google" || token.provider === "kakao")
+      ) {
+        session.user.provider = token.provider;
+      }
+      return session;
+    },
+  },
 });
